@@ -1,9 +1,12 @@
 import xarray as xr
 
-from ._validators import validate_dims
+from ._validators import apply_rounding, validate_dims
 
 
-def outer_align(arrays: dict[str, xr.DataArray]) -> dict[str, xr.DataArray]:
+def outer_align(
+    arrays: dict[str, xr.DataArray],
+    digits: int | None = 10,
+) -> dict[str, xr.DataArray]:
     """Align DataArrays by taking the union of coordinate values, filling gaps
     with NaN.
 
@@ -12,6 +15,8 @@ def outer_align(arrays: dict[str, xr.DataArray]) -> dict[str, xr.DataArray]:
 
     Args:
         arrays: Dict of DataArrays to align.
+        digits: Number of decimal places to round coordinate values to before
+            alignment. Defaults to 10. Pass None to disable rounding.
 
     Returns:
         A new dict with the same keys, where all DataArrays share the union
@@ -20,6 +25,7 @@ def outer_align(arrays: dict[str, xr.DataArray]) -> dict[str, xr.DataArray]:
     Raises:
         ValueError: If dims differ across any DataArrays.
     """
+    arrays = apply_rounding(arrays, digits)
     validate_dims(arrays)
 
     keys = list(arrays.keys())

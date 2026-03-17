@@ -1,4 +1,5 @@
-from typing import Callable, Mapping
+from collections.abc import Mapping
+from typing import Callable
 
 import numpy as np
 import xarray as xr
@@ -12,6 +13,7 @@ def evaluate(
     ctx: Mapping[str, xr.DataArray | np.ndarray | int | float | complex],
     funcs: Mapping[str, Callable] | None = None,
     alignment: str = "exact",
+    digits: int | None = 10,
 ) -> xr.DataArray:
     """Evaluate a Python expression string over xarray DataArrays.
 
@@ -35,6 +37,10 @@ def evaluate(
             ``"exact"`` (default), ``"inner"``, or ``"outer"``. Custom
             strategies can be registered via
             ``xeval.alignment.register()``.
+        digits:
+            Number of decimal places to round coordinate values to before
+            alignment. Defaults to 10 to absorb floating-point
+            representation errors. Pass None to disable rounding.
 
     Returns:
         The result as an ``xr.DataArray`` carrying the aligned dims and
@@ -86,7 +92,7 @@ def evaluate(
 
     # Apply alignment to DataArrays only.
     strategy: AlignmentStrategy = ALIGNMENT_STRATEGIES[alignment]
-    aligned = strategy(da_ctx)
+    aligned = strategy(da_ctx, digits=digits)
 
     # Flatten DataArrays to ndarrays for funcexpr.
     flat_ctx = {k: v.values for k, v in aligned.items()} | other_ctx

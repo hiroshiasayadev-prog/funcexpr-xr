@@ -1,26 +1,33 @@
 import numpy as np
 import xarray as xr
 
-from ._validators import validate_dims
+from ._validators import apply_rounding, validate_dims
 
 
-def exact_align(arrays: dict[str, xr.DataArray]) -> dict[str, xr.DataArray]:
+def exact_align(
+    arrays: dict[str, xr.DataArray],
+    digits: int | None = 10,
+) -> dict[str, xr.DataArray]:
     """Require that all DataArrays have identical dims and coordinate values.
 
     This is the strictest alignment mode and the default. No reindexing or
-    interpolation is performed; if any mismatch is detected, a ValueError is
-    raised immediately.
+    interpolation is performed; if any mismatch is detected after optional
+    rounding, a ValueError is raised immediately.
 
     Args:
         arrays: Dict of DataArrays to validate.
+        digits: Number of decimal places to round coordinate values to before
+            comparison. Defaults to 10 to absorb floating-point representation
+            errors. Pass None to disable rounding.
 
     Returns:
-        The same dict, unchanged (all arrays are already aligned by definition).
+        The rounded dict (or original if digits is None), unchanged in shape.
 
     Raises:
         ValueError: If dims differ across any DataArrays.
-        ValueError: If coordinate values differ for any dim.
+        ValueError: If coordinate values differ for any dim after rounding.
     """
+    arrays = apply_rounding(arrays, digits)
     validate_dims(arrays)
 
     items = list(arrays.items())

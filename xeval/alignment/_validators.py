@@ -2,6 +2,26 @@ from typing import Hashable
 
 import xarray as xr
 
+from ..rounding import round_coords
+
+
+def apply_rounding(
+    arrays: dict[str, xr.DataArray],
+    digits: int | None,
+) -> dict[str, xr.DataArray]:
+    """Round coordinates of all DataArrays if *digits* is not None.
+
+    Args:
+        arrays: Dict of DataArrays to process.
+        digits: Number of decimal places to round to, or None to skip.
+
+    Returns:
+        A new dict with rounded coordinates, or the original dict unchanged.
+    """
+    if digits is None:
+        return arrays
+    return {k: round_coords(v, digits) for k, v in arrays.items()}
+
 
 def validate_dims(arrays: dict[str, xr.DataArray]) -> tuple[Hashable, ...]:
     """Validate that all DataArrays share the same dims (name and order).
