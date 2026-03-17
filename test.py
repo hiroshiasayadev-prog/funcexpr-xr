@@ -52,3 +52,18 @@ try:
 except Exception as e:
     print(f'Error: {e}')
 
+import xeval
+da5 = xr.DataArray(
+    np.array([[10.0, 20.0, None, None], [40.0, 50.0, 60.0, 70.0], [80.0, 90.0, None, None]], dtype=np.float64),
+    dims=['time', 'x'],
+    coords={'time': [100, 200, 300], 'x': [10.0, 20.0, 30.0, 40.0]}  # timeがずれてる
+)
+axes = xr.DataArray(
+    np.array([[10.0, 20.0, None, None], [40.0, 50.0, 60.0, 70.0], [80.0, 90.0, None, None]], dtype=np.float64),
+    dims=['time', 'x'],
+    coords={'time': [100, 150, 200], 'x': [10.0, 15.0, 20.0, 30.0]}  # timeがずれてる
+)
+_da5 = xeval.evaluate_with_reindex("da5", {"da5": da5, "axes": axes}, "axes", interp=True)
+print(_da5)
+print(da5.coords["x"].values)
+print(axes.coords["x"].values)

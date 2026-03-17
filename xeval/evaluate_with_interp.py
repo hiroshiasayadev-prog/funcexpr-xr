@@ -6,6 +6,7 @@ import xarray as xr
 
 import funcexpr
 from .rounding import round_coords
+from ._ref_utils import extract_da_ctx, validate_ref
 
 
 def evaluate_with_interp(
@@ -75,31 +76,8 @@ def evaluate_with_interp(
         Coordinates:
           * x  (x) float64 1.0 2.0 3.0
     """
-    da_ctx: dict[str, xr.DataArray] = {
-        k: v for k, v in ctx.items() if isinstance(v, xr.DataArray)
-    }
-    other_ctx = {
-        k: v for k, v in ctx.items() if not isinstance(v, xr.DataArray)
-    }
-
-    if not da_ctx:
-        raise ValueError(
-            "ctx contains no xr.DataArray values. "
-            "xeval.evaluate_with_interp() requires at least one DataArray. "
-            "For ndarray-only expressions, use funcexpr.evaluate() directly."
-        )
-
-    if interp_ref not in ctx:
-        raise ValueError(
-            f"interp_ref={interp_ref!r} is not a key in ctx. "
-            f"Available keys: {list(ctx.keys())}."
-        )
-
-    if interp_ref not in da_ctx:
-        raise ValueError(
-            f"interp_ref={interp_ref!r} is not a DataArray. "
-            "interp_ref must point to an xr.DataArray in ctx."
-        )
+    da_ctx, other_ctx = extract_da_ctx(ctx, "evaluate_with_interp")
+    validate_ref(ctx, da_ctx, interp_ref, "interp_ref")
 
     # Round all DataArrays first, then use the rounded ref as the target grid.
     if digits is not None:
