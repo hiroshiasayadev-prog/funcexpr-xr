@@ -18,7 +18,7 @@ def extract_da_ctx(
     if not da_ctx:
         raise ValueError(
             f"ctx contains no xr.DataArray values. "
-            f"xeval.{func_name}() requires at least one DataArray. "
+            f"fxr.{func_name}() requires at least one DataArray. "
             "For ndarray-only expressions, use funcexpr.evaluate() directly."
         )
 

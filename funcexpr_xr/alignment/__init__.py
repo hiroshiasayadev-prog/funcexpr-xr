@@ -14,11 +14,11 @@ def register(name: str, strategy: AlignmentStrategy) -> None:
     """Register a custom alignment strategy.
 
     Args:
-        name: The strategy name used in ``xeval.evaluate(alignment=name)``.
+        name: The strategy name used in ``fxr.evaluate(alignment=name)``.
         strategy: A callable conforming to :class:`AlignmentStrategy`.
 
     Example:
-        >>> from xeval.alignment import register
+        >>> from fxr.alignment import register
         >>> def my_interp(arrays):
         ...     ...
         >>> register("interp", my_interp)

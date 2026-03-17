@@ -66,7 +66,7 @@ def evaluate_with_reindex(
     Examples:
         >>> import numpy as np
         >>> import xarray as xr
-        >>> import xeval
+        >>> import funcexpr_xr as fxr
         >>> da1 = xr.DataArray(
         ...     [1.0, np.nan, 3.0],
         ...     dims=["x"], coords={"x": [1.0, 2.0, 3.0]}
@@ -76,9 +76,9 @@ def evaluate_with_reindex(
         ...     dims=["x"], coords={"x": [1.0, 3.0]}
         ... )
         >>> # reindex only: x=2.0 has no match in da2, so NaN
-        >>> xeval.evaluate_with_reindex("a + b", ctx={"a": da1, "b": da2}, reindex_ref="a")
+        >>> fxr.evaluate_with_reindex("a + b", ctx={"a": da1, "b": da2}, reindex_ref="a")
         >>> # interp=True: x=2.0 in da2 is interpolated to 20.0; da1's NaN at x=2.0 stays NaN
-        >>> xeval.evaluate_with_reindex("a + b", ctx={"a": da1, "b": da2}, reindex_ref="a", interp=True)
+        >>> fxr.evaluate_with_reindex("a + b", ctx={"a": da1, "b": da2}, reindex_ref="a", interp=True)
     """
     da_ctx, other_ctx = extract_da_ctx(ctx, "evaluate_with_reindex")
     validate_ref(ctx, da_ctx, reindex_ref, "reindex_ref")

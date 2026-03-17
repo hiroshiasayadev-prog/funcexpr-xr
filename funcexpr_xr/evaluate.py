@@ -36,7 +36,7 @@ def evaluate(
             Strategy for aligning DataArray coordinates. One of
             ``"exact"`` (default), ``"inner"``, or ``"outer"``. Custom
             strategies can be registered via
-            ``xeval.alignment.register()``.
+            ``fxr.alignment.register()``.
         digits:
             Number of decimal places to round coordinate values to before
             alignment. Defaults to 10 to absorb floating-point
@@ -58,10 +58,10 @@ def evaluate(
     Examples:
         >>> import numpy as np
         >>> import xarray as xr
-        >>> import xeval
+        >>> import funcexpr_xr as fxr
         >>> da1 = xr.DataArray([1.0, 2.0, 3.0], dims=["x"], coords={"x": [1, 2, 3]})
         >>> da2 = xr.DataArray([4.0, 5.0, 6.0], dims=["x"], coords={"x": [1, 2, 3]})
-        >>> xeval.evaluate("a + b * 2", ctx={"a": da1, "b": da2})
+        >>> fxr.evaluate("a + b * 2", ctx={"a": da1, "b": da2})
         <xarray.DataArray (x: 3)>
         array([ 9., 12., 15.])
         Coordinates:
@@ -78,7 +78,7 @@ def evaluate(
     if not da_ctx:
         raise ValueError(
             "ctx contains no xr.DataArray values. "
-            "xeval.evaluate() requires at least one DataArray. "
+            "fxr.evaluate() requires at least one DataArray. "
             "For ndarray-only expressions, use funcexpr.evaluate() directly."
         )
 
@@ -87,7 +87,7 @@ def evaluate(
         raise ValueError(
             f"Unknown alignment strategy: {alignment!r}. "
             f"Registered strategies: {registered}. "
-            "Use xeval.alignment.register() to add a custom strategy."
+            "Use fxr.alignment.register() to add a custom strategy."
         )
 
     # Apply alignment to DataArrays only.

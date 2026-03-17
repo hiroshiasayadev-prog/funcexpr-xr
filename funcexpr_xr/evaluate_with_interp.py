@@ -67,10 +67,10 @@ def evaluate_with_interp(
     Examples:
         >>> import numpy as np
         >>> import xarray as xr
-        >>> import xeval
+        >>> import funcexpr_xr as fxr
         >>> da1 = xr.DataArray([1.0, 2.0, 3.0], dims=["x"], coords={"x": [1.0, 2.0, 3.0]})
         >>> da2 = xr.DataArray([10.0, 30.0], dims=["x"], coords={"x": [1.0, 3.0]})
-        >>> xeval.evaluate_with_interp("a + b", ctx={"a": da1, "b": da2}, interp_ref="a")
+        >>> fxr.evaluate_with_interp("a + b", ctx={"a": da1, "b": da2}, interp_ref="a")
         <xarray.DataArray (x: 3)>
         array([11., 22., 33.])
         Coordinates:
