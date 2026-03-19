@@ -43,6 +43,14 @@ Scalars and ndarrays can be mixed in `ctx` alongside DataArrays.
 result = fxr.evaluate("a * scale + offset", ctx={"a": da1, "scale": 2.0, "offset": 1.0})
 ```
 
+Coordinate values are automatically available in expressions by their coordinate name.
+```python
+da = xr.DataArray([1.0, 2.0, 3.0], dims=["x"], coords={"x": [10.0, 20.0, 30.0]})
+result = fxr.evaluate("a * x", ctx={"a": da})
+# x coord is injected automatically
+# array([ 10.,  40.,  90.])
+```
+
 Custom callables work the same way as in `funcexpr`.
 
 ```python
