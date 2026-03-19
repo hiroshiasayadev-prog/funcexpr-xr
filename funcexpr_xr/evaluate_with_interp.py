@@ -6,7 +6,7 @@ import xarray as xr
 
 import funcexpr
 from .rounding import round_coords
-from ._ref_utils import extract_da_ctx, validate_ref
+from ._ref_utils import extract_da_ctx, validate_ref, build_coord_ctx
 
 
 def evaluate_with_interp(
@@ -42,6 +42,10 @@ def evaluate_with_interp(
             ``xr.DataArray``, ``np.ndarray``, ``int``, ``float``, or
             ``complex``. At least one DataArray must be present, and
             *interp_ref* must be a key in *ctx*.
+            Coordinate arrays of the aligned DataArrays are 
+            automatically injected into the expression namespace 
+            under their coordinate names,
+            unless a key of the same name already exists in ctx.
         interp_ref:
             The name of the DataArray in *ctx* whose coordinate grid is
             used as the interpolation target. All other DataArrays are
@@ -54,6 +58,7 @@ def evaluate_with_interp(
             Number of decimal places to round coordinate values to before
             interpolation. Defaults to 10 to absorb floating-point
             representation errors. Pass None to disable rounding.
+            Also applied to coordinate values injected into the expression namespace.
 
     Returns:
         The result as an ``xr.DataArray`` carrying the (rounded) dims and
@@ -91,6 +96,8 @@ def evaluate_with_interp(
 
     # Flatten to ndarrays for funcexpr.
     flat_ctx = {k: v.values for k, v in interpolated.items()} | other_ctx
+    coord_ctx = build_coord_ctx(ref, flat_ctx, digits)
+    flat_ctx = coord_ctx | flat_ctx
 
     result_values = funcexpr.evaluate(expr, ctx=flat_ctx, funcs=funcs)
 

@@ -6,6 +6,7 @@ import xarray as xr
 
 import funcexpr
 from .alignment import ALIGNMENT_STRATEGIES, AlignmentStrategy
+from ._ref_utils import build_coord_ctx
 
 
 def evaluate(
@@ -29,6 +30,10 @@ def evaluate(
             A mapping from variable name to value. Accepts
             ``xr.DataArray``, ``np.ndarray``, ``int``, ``float``, or
             ``complex``. At least one DataArray must be present.
+            Coordinate arrays of the aligned DataArrays are 
+            automatically injected into the expression namespace 
+            under their coordinate names,
+            unless a key of the same name already exists in ctx.
         funcs:
             Optional mapping from function name to callable, forwarded
             to ``funcexpr.evaluate``.
@@ -41,6 +46,7 @@ def evaluate(
             Number of decimal places to round coordinate values to before
             alignment. Defaults to 10 to absorb floating-point
             representation errors. Pass None to disable rounding.
+            Also applied to coordinate values injected into the expression namespace.
 
     Returns:
         The result as an ``xr.DataArray`` carrying the aligned dims and
@@ -94,12 +100,14 @@ def evaluate(
     strategy: AlignmentStrategy = ALIGNMENT_STRATEGIES[alignment]
     aligned = strategy(da_ctx, digits=digits)
 
-    # Flatten DataArrays to ndarrays for funcexpr.
-    flat_ctx = {k: v.values for k, v in aligned.items()} | other_ctx
-
-    result_values = funcexpr.evaluate(expr, ctx=flat_ctx, funcs=funcs)
-
     # Reconstruct DataArray from aligned coords.
     # All aligned arrays share the same dims/coords by this point.
     ref = next(iter(aligned.values()))
+
+    # Flatten DataArrays to ndarrays for funcexpr.
+    flat_ctx = {k: v.values for k, v in aligned.items()} | other_ctx
+    coord_ctx = build_coord_ctx(ref, flat_ctx, digits)
+    flat_ctx = coord_ctx | flat_ctx
+
+    result_values = funcexpr.evaluate(expr, ctx=flat_ctx, funcs=funcs)
     return xr.DataArray(result_values, dims=ref.dims, coords=ref.coords)

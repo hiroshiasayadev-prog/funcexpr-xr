@@ -6,7 +6,7 @@ import xarray as xr
 
 import funcexpr
 from .rounding import round_coords
-from ._ref_utils import extract_da_ctx, validate_ref
+from ._ref_utils import extract_da_ctx, validate_ref, build_coord_ctx
 
 
 def evaluate_with_reindex(
@@ -39,6 +39,10 @@ def evaluate_with_reindex(
             ``xr.DataArray``, ``np.ndarray``, ``int``, ``float``, or
             ``complex``. At least one DataArray must be present, and
             *reindex_ref* must be a key in *ctx*.
+            Coordinate arrays of the aligned DataArrays are 
+            automatically injected into the expression namespace 
+            under their coordinate names,
+            unless a key of the same name already exists in ctx.
         reindex_ref:
             The name of the DataArray in *ctx* whose coordinate grid is
             used as the reindex target. Required; there is no default to
@@ -53,6 +57,7 @@ def evaluate_with_reindex(
         digits:
             Number of decimal places to round coordinate values to before
             reindexing. Defaults to 10. Pass None to disable rounding.
+            Also applied to coordinate values injected into the expression namespace.
 
     Returns:
         The result as an ``xr.DataArray`` carrying the (rounded) dims and
@@ -98,6 +103,8 @@ def evaluate_with_reindex(
         aligned = {k: v.reindex_like(ref) for k, v in da_ctx.items()}
 
     flat_ctx = {k: v.values for k, v in aligned.items()} | other_ctx
+    coord_ctx = build_coord_ctx(ref, flat_ctx, digits)
+    flat_ctx = coord_ctx | flat_ctx
 
     result_values = funcexpr.evaluate(expr, ctx=flat_ctx, funcs=funcs)
 

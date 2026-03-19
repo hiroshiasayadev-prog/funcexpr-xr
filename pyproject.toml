@@ -4,9 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "funcexpr-xr"
-version = "0.1.0"
+version = "0.1.1"
 description = "xarray.DataArray support layer for funcexpr"
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
     "xarray",
@@ -14,6 +15,25 @@ dependencies = [
     "numexpr",
     "numpy",
 ]
+keywords = ["numexpr", "xarray", "numpy", "expression", "ast", "callable", "funcexpr", "data flow", "formula"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["funcexpr_xr"]
+
+[project.urls]
+Homepage = "https://github.com/hiroshiasayadev-prog/funcexpr_xr"
+Repository = "https://github.com/hiroshiasayadev-prog/funcexpr_xr"
+Issues = "https://github.com/hiroshiasayadev-prog/funcexpr_xr/issues"

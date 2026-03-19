@@ -47,3 +47,53 @@ def validate_ref(
             f"{param_name}={ref_name!r} is not a DataArray. "
             f"{param_name} must point to an xr.DataArray in ctx."
         )
+
+
+def build_coord_ctx(
+    ref: xr.DataArray,
+    flat_ctx: dict,
+    digits: int | None,
+) -> dict:
+    """Build a coord variable mapping from a reference DataArray.
+
+    Extracts coordinate arrays from *ref* and returns them as a dict
+    suitable for merging into the flat ctx passed to ``funcexpr.evaluate``.
+    Coordinates whose names are already present in *flat_ctx* are skipped,
+    so explicit user-supplied values always take precedence.
+
+    Floating-point coordinates are rounded to *digits* decimal places when
+    *digits* is not ``None``, matching the rounding applied during alignment.
+    Non-floating coordinates are passed through as-is.
+
+    Args:
+        ref:
+            A reference DataArray whose coordinates are extracted. Typically
+            the first aligned DataArray; all aligned arrays share the same
+            coords by this point.
+        flat_ctx:
+            The already-flattened ctx dict (DataArrays resolved to ndarrays,
+            scalars included). Used only to check for name conflicts.
+        digits:
+            Number of decimal places to round floating-point coordinate
+            values. Pass ``None`` to disable rounding.
+
+    Returns:
+        A dict mapping coordinate name to ``np.ndarray``. Only coordinates
+        not already present in *flat_ctx* are included.
+    """
+    import numpy as np
+
+    coord_ctx = {}
+    for coord_name, coord in ref.coords.items():
+        if coord_name not in flat_ctx:
+            values = coord.values
+            if digits is not None and np.issubdtype(values.dtype, np.floating):
+                values = np.round(values, digits)
+            # reshape for broadcasting: (n,) -> proper shape for ref
+            if coord_name in ref.dims:
+                axis = ref.dims.index(coord_name)
+                shape = [1] * ref.ndim
+                shape[axis] = -1
+                values = values.reshape(shape)
+            coord_ctx[coord_name] = values
+    return coord_ctx

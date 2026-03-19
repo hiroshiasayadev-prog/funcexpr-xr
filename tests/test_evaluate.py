@@ -67,3 +67,38 @@ class TestEvaluateMixedCtx:
         b = np.array([1.0, 2.0, 3.0])
         result = fxr.evaluate("a + b", ctx={"a": da_x, "b": b})
         assert isinstance(result, xr.DataArray)
+
+class TestEvaluateCoordInjection:
+    def test_coord_available_in_expr(self, da_x):
+        # x coord [1.0, 2.0, 3.0] should be injected automatically
+        result = fxr.evaluate("a * x", ctx={"a": da_x})
+        np.testing.assert_array_almost_equal(result.values, [1.0, 4.0, 9.0])
+
+    def test_coord_injection_with_digits(self, da_x):
+        # digits=10 should round float coords before injection
+        result = fxr.evaluate("a * x", ctx={"a": da_x}, digits=10)
+        np.testing.assert_array_almost_equal(result.values, [1.0, 4.0, 9.0])
+
+    def test_coord_injection_digits_none(self, da_x):
+        result = fxr.evaluate("a * x", ctx={"a": da_x}, digits=None)
+        np.testing.assert_array_almost_equal(result.values, [1.0, 4.0, 9.0])
+
+    def test_explicit_ctx_takes_precedence(self, da_x):
+        # user-supplied x should win over coord injection
+        result = fxr.evaluate("a * x", ctx={"a": da_x, "x": np.array([10.0, 10.0, 10.0])})
+        np.testing.assert_array_almost_equal(result.values, [10.0, 20.0, 30.0])
+
+    def test_2d_coord_injection(self, da_xy):
+        # time coord should broadcast correctly over (time, x) array
+        result = fxr.evaluate("a * time", ctx={"a": da_xy})
+        assert isinstance(result, xr.DataArray)
+        # time=[0,1], x=[1,2,3] -> row0 * 0.0, row1 * 1.0
+        np.testing.assert_array_almost_equal(result.values[0], [0.0, 0.0, 0.0])
+        np.testing.assert_array_almost_equal(result.values[1], [1.0, 1.0, 1.0])
+
+    def test_2d_coord_injection_x_axis(self, da_xy):
+        result = fxr.evaluate("a * x", ctx={"a": da_xy})
+        assert isinstance(result, xr.DataArray)
+        # x=[1,2,3] broadcast over (time, x) -> each row multiplied by [1,2,3]
+        np.testing.assert_array_almost_equal(result.values[0], [1.0, 2.0, 3.0])
+        np.testing.assert_array_almost_equal(result.values[1], [1.0, 2.0, 3.0])
